@@ -1,0 +1,91 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>
+        {% block title %}JobTrack{% endblock %} | Job Application Tracker
+    </title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="shell">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+
+            <a class="brand" href="{{ url_for('dashboard') }}">
+                <span class="brand-icon">JT</span>
+                JobTrack
+            </a>
+
+            <div class="side-label">WORKSPACE</div>
+
+            <nav>
+                <a class="{{ 'active' if request.path == '/' else '' }}"
+                   href="{{ url_for('dashboard') }}">
+                    ▦ &nbsp; Dashboard
+                </a>
+
+                {% for key, item in tables.items() %}
+                <a class="{{ 'active' if request.path.startswith('/' + key) else '' }}"
+                   href="{{ url_for('records', table=key) }}">
+                    {{ {
+                        'companies': '▤',
+                        'jobs': '▣',
+                        'applications': '◉',
+                        'contacts': '♙'
+                    }[key] }}
+                    &nbsp; {{ item.title }}
+                </a>
+                {% endfor %}
+
+                <a class="{{ 'active' if request.path == '/job-match' else '' }}"
+                   href="{{ url_for('job_match') }}">
+                    ✦ &nbsp; Job Match
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                COP4751 · Course Project
+            </div>
+
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+
+            <!-- Top Navigation -->
+            <header class="topbar">
+                <span>Job Application Tracker</span>
+                <span class="top-tag">My workspace</span>
+            </header>
+
+            <div class="content">
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% for category, message in messages %}
+                        <div class="alert {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endwith %}
+
+                <!-- Page Content -->
+                {% block content %}
+                {% endblock %}
+
+            </div>
+
+        </main>
+
+    </div>
+</body>
+
+</html>

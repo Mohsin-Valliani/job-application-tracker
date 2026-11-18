@@ -1,0 +1,110 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Dashboard Header -->
+<div class="eyebrow">OVERVIEW</div>
+
+<h1>Your job search, organized.</h1>
+
+<p class="muted intro">
+    Track opportunities, stay on top of applications, and find your next move.
+</p>
+
+<!-- Dashboard Statistics -->
+<div class="stats">
+    {% for key, number in counts.items() %}
+    <a class="stat" href="{{ url_for('records', table=key) }}">
+        <div class="stat-name">
+            {{ tables[key].title }}
+        </div>
+
+        <div class="stat-number">
+            {{ number }}
+        </div>
+
+        <div class="stat-foot">
+            View all →
+        </div>
+    </a>
+    {% endfor %}
+</div>
+
+<!-- Recent Applications -->
+<div class="section-head">
+    <div>
+        <h2>Recent applications</h2>
+        <p class="muted">Your latest activity at a glance</p>
+    </div>
+
+    <a class="btn" href="{{ url_for('new_record', table='applications') }}">
+        + Add application
+    </a>
+</div>
+
+<div class="panel table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>Position</th>
+                <th>Company</th>
+                <th>Applied</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for row in recent %}
+            <tr>
+                <td>
+                    <strong>{{ row.job_title or 'Unassigned job' }}</strong>
+                </td>
+
+                <td>{{ row.company_name or '—' }}</td>
+
+                <td>{{ row.application_date or '—' }}</td>
+
+                <td>
+                    <span class="pill">
+                        {{ row.status or '—' }}
+                    </span>
+                </td>
+            </tr>
+
+            {% else %}
+            <tr>
+                <td colspan="4" class="empty">
+                    No applications yet. Add your first application to get started.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Application Pipeline -->
+<div class="section-head">
+    <div>
+        <h2>Application pipeline</h2>
+        <p class="muted">Applications by status</p>
+    </div>
+</div>
+
+<div class="pipeline">
+    {% for row in status_counts %}
+    <div class="pipeline-item">
+        <strong>{{ row.total }}</strong>
+        <span>{{ row.status or 'Not set' }}</span>
+    </div>
+
+    {% else %}
+    <p class="muted">
+        Your pipeline will appear here after you add applications.
+    </p>
+    {% endfor %}
+</div>
+
+{% endblock %}

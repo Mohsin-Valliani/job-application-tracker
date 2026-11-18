@@ -1,0 +1,216 @@
+
+{% extends 'base.html' %}
+
+{% block title %}
+    {{ 'Edit' if editing else 'Add' }} {{ config.title }}
+{% endblock %}
+
+{% block content %}
+
+<div class="eyebrow">
+    {{ config.title|upper }}
+</div>
+
+<h1>
+    {{ 'Edit' if editing else 'Add' }}
+    {{ config.title[:-1] if table != 'companies' else 'Company' }}
+</h1>
+
+<p class="muted intro">
+    Fill in the information below, then save your changes.
+</p>
+
+<div class="panel form-panel">
+    <form method="post">
+
+        <div class="form-grid">
+
+            {% for name, label, kind, required in config.fields %}
+
+                {% set value = request.form.get(name)
+                    if request.method == 'POST'
+                    else (record[name] if record else none) %}
+
+                <div class="field {{ 'full' if kind in ('textarea', 'skills', 'json') else '' }}">
+
+                    <label for="{{ name }}">
+                        {{ label }}
+                        {% if required %}
+                            <span class="required">*</span>
+                        {% endif %}
+                    </label>
+
+                    {% if kind == 'textarea' %}
+
+                        <textarea
+                            id="{{ name }}"
+                            name="{{ name }}"
+                            rows="4"
+                            {{ 'required' if required else '' }}
+                        >{{ value or '' }}</textarea>
+
+                    {% elif kind == 'company' %}
+
+                        <select
+                            id="{{ name }}"
+                            name="{{ name }}"
+                            {{ 'required' if required else '' }}
+                        >
+
+                            <option value="">
+                                Select company (optional)
+                            </option>
+
+                            {% for company in options.companies %}
+
+                                <option
+                                    value="{{ company.company_id }}"
+                                    {{ 'selected' if value|string == company.company_id|string else '' }}
+                                >
+                                    {{ company.company_name }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    {% elif kind == 'job' %}
+
+                        <select
+                            id="{{ name }}"
+                            name="{{ name }}"
+                            {{ 'required' if required else '' }}
+                        >
+
+                            <option value="">
+                                Select job (optional)
+                            </option>
+
+                            {% for job in options.jobs %}
+
+                                <option
+                                    value="{{ job.job_id }}"
+                                    {{ 'selected' if value|string == job.job_id|string else '' }}
+                                >
+                                    {{ job.job_title }} —
+                                    {{ job.company_name or 'No company' }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    {% elif kind in ('job_type', 'status') %}
+
+                        <select
+                            id="{{ name }}"
+                            name="{{ name }}"
+                            {{ 'required' if required else '' }}
+                        >
+
+                            <option value="">
+                                Select {{ label|lower }}
+                            </option>
+
+                            {% set dropdown_options = job_types if kind == 'job_type' else statuses %}
+
+                            {% if value and value not in dropdown_options %}
+
+                                <option value="{{ value }}" selected>
+                                    {{ value }}
+                                </option>
+
+                            {% endif %}
+
+                            {% for option in dropdown_options %}
+
+                                <option
+                                    value="{{ option }}"
+                                    {{ 'selected' if value == option else '' }}
+                                >
+                                    {{ option }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    {% elif kind == 'checkbox' %}
+
+                        <label class="check">
+                            <input
+                                type="checkbox"
+                                id="{{ name }}"
+                                name="{{ name }}"
+                                {{ 'checked' if value in (1, True, 'on') else '' }}
+                            >
+                            Yes
+                        </label>
+
+                    {% elif kind == 'skills' %}
+
+                        <input
+                            id="{{ name }}"
+                            name="{{ name }}"
+                            placeholder="Python, SQL, Flask"
+                            value="{% if request.method == 'POST' %}{{ value or '' }}{% elif value %}{{ (value|fromjson)|join(', ') }}{% endif %}"
+                            {{ 'required' if required else '' }}
+                        >
+
+                        <small>
+                            Enter skills separated by commas.
+                            Stored as a JSON array.
+                        </small>
+
+                    {% elif kind == 'json' %}
+
+                        <textarea
+                            id="{{ name }}"
+                            name="{{ name }}"
+                            rows="4"
+                            placeholder='{"date": "2026-11-18", "notes": "Phone screen"}'
+                            {{ 'required' if required else '' }}
+                        >{{ value or '' }}</textarea>
+
+                        <small>
+                            Enter a valid JSON object, or leave blank.
+                        </small>
+
+                    {% else %}
+
+                        <input
+                            id="{{ name }}"
+                            name="{{ name }}"
+                            type="{{ kind }}"
+                            value="{% if kind == 'number' and value is not none and value != '' %}{{ value|int }}{% else %}{{ value or '' }}{% endif %}"
+                            {{ 'required' if required else '' }}
+                            {{ 'min=0' if kind == 'number' else '' }}
+                        >
+
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+        <div class="form-actions">
+
+            <a
+                class="btn secondary"
+                href="{{ url_for('records', table=table) }}"
+            >
+                Cancel
+            </a>
+
+            <button class="btn" type="submit">
+                Save {{ config.title[:-1] if table != 'companies' else 'Company' }}
+            </button>
+
+        </div>
+
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,114 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Job Match{% endblock %}
+
+{% block content %}
+
+<div class="eyebrow">SKILL ANALYSIS</div>
+
+<h1>Find your best match.</h1>
+
+<p class="muted intro">
+    Enter your skills to see which jobs match your experience.
+</p>
+
+<div class="panel match-panel">
+    <form method="post">
+        <label for="skills">Your skills</label>
+
+        <div class="match-input">
+            <input
+                id="skills"
+                name="skills"
+                placeholder="Python, SQL, Flask, Git"
+                value="{{ raw }}"
+                required
+            >
+
+            <button class="btn" type="submit">
+                ✦ &nbsp; Find matches
+            </button>
+        </div>
+
+        <small>
+            Separate each skill with a comma.
+            Matching is case-insensitive.
+        </small>
+    </form>
+</div>
+
+{% if searched %}
+
+<div class="section-head">
+    <div>
+        <h2>Matching jobs</h2>
+
+        <p class="muted">
+            {{ results|length }} jobs ranked by skill match
+        </p>
+    </div>
+</div>
+
+<div class="match-results">
+
+    {% for row in results %}
+
+    <div class="panel result">
+
+        <div class="result-top">
+            <div>
+                <h3>{{ row.job_title }}</h3>
+
+                <p class="muted">
+                    {{ row.company_name or 'No company' }}
+                </p>
+            </div>
+
+            <div class="percent">
+                {{ row.percentage }}%
+            </div>
+        </div>
+
+        <div class="progress">
+            <div style="width: {{ row.percentage }}%"></div>
+        </div>
+
+        <div class="match-meta">
+            {{ row.matching|length }}/{{ row.total }}
+            required skills matched
+
+            {% if not row.total %}
+                · No skills specified for this job
+            {% endif %}
+        </div>
+
+        {% if row.matching %}
+        <p>
+            <span class="match-label">Matched:</span>
+            {{ row.matching|join(', ') }}
+        </p>
+        {% endif %}
+
+        {% if row.missing %}
+        <p>
+            <span class="match-label">Missing:</span>
+            {{ row.missing|join(', ') }}
+        </p>
+        {% endif %}
+
+    </div>
+
+    {% else %}
+
+    <div class="panel empty">
+        No jobs yet. Add jobs with required skills first.
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% endif %}
+
+{% endblock %}

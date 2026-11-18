@@ -1,0 +1,158 @@
+
+{% extends 'base.html' %}
+
+{% block title %}{{ config.title }}{% endblock %}
+
+{% block content %}
+
+<div class="eyebrow">MANAGE RECORDS</div>
+
+<div class="section-head page-head">
+    <div>
+        <h1>{{ config.title }}</h1>
+
+        <p class="muted">
+            Manage and organize your {{ config.title|lower }}.
+        </p>
+    </div>
+
+    <a
+        class="btn"
+        href="{{ url_for('new_record', table=table) }}"
+    >
+        + Add {{ config.title[:-1] if table != 'companies' else 'Company' }}
+    </a>
+</div>
+
+<div class="panel table-wrap">
+    <table>
+        <thead>
+            <tr>
+                {% if table == 'companies' %}
+                    <th>Company</th>
+                    <th>Industry</th>
+                    <th>Location</th>
+                    <th>Website</th>
+
+                {% elif table == 'jobs' %}
+                    <th>Position</th>
+                    <th>Company</th>
+                    <th>Type</th>
+                    <th>Salary range</th>
+
+                {% elif table == 'applications' %}
+                    <th>Job</th>
+                    <th>Company</th>
+                    <th>Date applied</th>
+                    <th>Status</th>
+
+                {% else %}
+                    <th>Contact</th>
+                    <th>Company</th>
+                    <th>Title</th>
+                    <th>Email</th>
+                {% endif %}
+
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                {% if table == 'companies' %}
+                    <td>
+                        <strong>{{ row.company_name }}</strong>
+                    </td>
+                    <td>{{ row.industry or '—' }}</td>
+                    <td>
+                        {{ [row.city, row.state]|select|join(', ') or '—' }}
+                    </td>
+                    <td>
+                        {% if row.website %}
+                            <a
+                                href="{{ row.website }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Visit ↗
+                            </a>
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                {% elif table == 'jobs' %}
+                    <td>
+                        <strong>{{ row.job_title }}</strong>
+                    </td>
+                    <td>{{ row.company_name or '—' }}</td>
+                    <td>{{ row.job_type or '—' }}</td>
+                    <td>
+                        {% if row.salary_min or row.salary_max %}
+                            ${{ '{:,}'.format(row.salary_min or 0) }}
+                            –
+                            ${{ '{:,}'.format(row.salary_max or 0) }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+
+                {% elif table == 'applications' %}
+                    <td>
+                        <strong>{{ row.job_title or '—' }}</strong>
+                    </td>
+                    <td>{{ row.company_name or '—' }}</td>
+                    <td>{{ row.application_date }}</td>
+                    <td>
+                        <span class="pill">
+                            {{ row.status or '—' }}
+                        </span>
+                    </td>
+
+                {% else %}
+                    <td>
+                        <strong>{{ row.contact_name }}</strong>
+                    </td>
+                    <td>{{ row.company_name or '—' }}</td>
+                    <td>{{ row.title or '—' }}</td>
+                    <td>{{ row.email or '—' }}</td>
+                {% endif %}
+
+                <td>
+                    <div class="actions">
+                        <a
+                            class="small-btn"
+                            href="{{ url_for('edit_record', table=table, record_id=row[config.pk]) }}"
+                        >
+                            Edit
+                        </a>
+
+                        <form
+                            method="post"
+                            action="{{ url_for('delete_record', table=table, record_id=row[config.pk]) }}"
+                            onsubmit="return confirm('Delete this record? This cannot be undone.');"
+                        >
+                            <button
+                                class="small-btn danger"
+                                type="submit"
+                            >
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+
+            {% else %}
+            <tr>
+                <td class="empty" colspan="5">
+                    No records yet. Use the Add button to create one.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
